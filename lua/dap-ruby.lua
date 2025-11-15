@@ -8,10 +8,9 @@ end
 
 local function pick_port()
 	local port
-	vim.ui.input(
-		{ prompt = "Select port to connect to: " },
-		function(input) port = input end
-	)
+	vim.ui.input({ prompt = "Select port to connect to: " }, function(input)
+		port = input
+	end)
 	return port
 end
 
@@ -26,7 +25,7 @@ local function find_cmd_dir(cmd)
 		if vim.fn.executable(filepath .. "/" .. cmd) == 1 then
 			return filepath
 		end
-		filepath = vim.fn.fnamemodify(filepath, ':h')
+		filepath = vim.fn.fnamemodify(filepath, ":h")
 	end
 	error(cmd .. " not found in " .. og_filepath .. " or any of its ancestors")
 end
@@ -81,10 +80,7 @@ local function setup_ruby_adapter(dap)
 			vim.env.RUBY_DEBUG_OPEN = true
 			vim.env.RUBY_DEBUG_HOST = server
 			vim.env.RUBY_DEBUG_PORT = port
-			run_cmd(
-				config.command, config.args, config.current_line, config.current_file,
-				config.error_on_failure
-			)
+			run_cmd(config.command, config.args, config.current_line, config.current_file, config.error_on_failure)
 		end
 
 		-- Wait for rdbg to start
@@ -95,7 +91,13 @@ local function setup_ruby_adapter(dap)
 end
 
 local function setup_ruby_configuration(dap)
-	local base_config = { type = "ruby", request = "attach", options = { source_filetype = "ruby" }, error_on_failure = true, localfs = true }
+	local base_config = {
+		type = "ruby",
+		request = "attach",
+		options = { source_filetype = "ruby" },
+		error_on_failure = true,
+		localfs = true,
+	}
 	local run_config = vim.tbl_extend("force", base_config, { waiting = 1000, random_port = true })
 	local function extend_base_config(config)
 		return vim.tbl_extend("force", base_config, config)
@@ -104,14 +106,23 @@ local function setup_ruby_configuration(dap)
 		return vim.tbl_extend("force", run_config, config)
 	end
 	dap.configurations.ruby = {
-		extend_run_config({ name = "debug current file", command = "rdbg",  current_file = true }),
-		extend_run_config({ name = "run rails", command = "bundle", args = { "exec", "rails", "s" } }),
-		extend_run_config({ name = "run rspec current file", command = "bundle", args = { "exec", "rspec" }, current_file = true }),
-		extend_run_config({ name = "run rspec current_file:current_line", command = "bundle", args = { "exec", "rspec" }, current_line = true }),
-		extend_run_config({ name = "run rspec", command = "bundle", args = { "exec", "rspec" } }),
-		extend_run_config({ name = "bin/dev", command = "bin/dev" }),
 		extend_base_config({ name = "attach existing (port 38698)", port = 38698, waiting = 0 }),
 		extend_base_config({ name = "attach existing (pick port)", waiting = 0 }),
+		extend_run_config({
+			name = "run rspec current file",
+			command = "bundle",
+			args = { "exec", "rspec" },
+			current_file = true,
+		}),
+		extend_run_config({
+			name = "run rspec current_file:current_line",
+			command = "bundle",
+			args = { "exec", "rspec" },
+			current_line = true,
+		}),
+		extend_run_config({ name = "run rspec", command = "bundle", args = { "exec", "rspec" } }),
+		extend_run_config({ name = "bin/dev", command = "bin/dev" }),
+		extend_run_config({ name = "debug current file", command = "rdbg", current_file = true }),
 	}
 end
 
